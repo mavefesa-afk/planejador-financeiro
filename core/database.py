@@ -1,4 +1,5 @@
 import sqlite3
+import init_db
 from typing import List, Dict, Any
 
 DB_NAME = "planejador.db"
