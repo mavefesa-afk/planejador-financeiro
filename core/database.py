@@ -1,8 +1,33 @@
 import sqlite3
-import init_db
 from typing import List, Dict, Any
 
 DB_NAME = "planejador.db"
+
+def init_db():
+    """Função global para inicializar o banco de dados e criar tabelas necessárias se não existirem."""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    
+    # Tabela de Ativos da Carteira
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS carteira (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ticker TEXT NOT NULL,
+            classe TEXT NOT NULL,
+            tipo TEXT,
+            setor TEXT,
+            liquidez_diaria REAL,
+            p_vp REAL,
+            vacancia REAL,
+            dy_nominal_12m REAL,
+            historico_dividendos_consistente INTEGER,
+            cobertura_fgc INTEGER,
+            indexador TEXT
+        )
+    """)
+    
+    conn.commit()
+    conn.close()
 
 class DatabaseManager:
     """
@@ -12,35 +37,13 @@ class DatabaseManager:
 
     @staticmethod
     def init_db():
-        """Inicializa o banco de dados criando as tabelas necessárias se não existirem."""
-        conn = sqlite3.connect(DB_NAME)
-        cursor = conn.cursor()
-        
-        # Tabela de Ativos da Carteira
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS carteira (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ticker TEXT NOT NULL,
-                classe TEXT NOT NULL,
-                tipo TEXT,
-                setor TEXT,
-                liquidez_diaria REAL,
-                p_vp REAL,
-                vacancia REAL,
-                dy_nominal_12m REAL,
-                historico_dividendos_consistente INTEGER,
-                cobertura_fgc INTEGER,
-                indexador TEXT
-            )
-        """)
-        
-        conn.commit()
-        conn.close()
+        """Método de compatibilidade para inicializar o banco."""
+        init_db()
 
     @staticmethod
     def adicionar_ativo(dados: Dict[str, Any]):
         """Insere um novo ativo na carteira do banco de dados."""
-        DatabaseManager.init_db()
+        init_db()
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
         
@@ -70,7 +73,7 @@ class DatabaseManager:
     @staticmethod
     def obter_carteira() -> List[Dict[str, Any]]:
         """Busca todos os ativos cadastrados na carteira."""
-        DatabaseManager.init_db()
+        init_db()
         conn = sqlite3.connect(DB_NAME)
         conn.row_factory = sqlite3.Row  # Permite acessar colunas pelo nome
         cursor = conn.cursor()
@@ -101,7 +104,7 @@ class DatabaseManager:
     @staticmethod
     def limpar_carteira():
         """Remove todos os registros da carteira (útil para testes)."""
-        DatabaseManager.init_db()
+        init_db()
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
         cursor.execute("DELETE FROM carteira")
